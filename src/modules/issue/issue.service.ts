@@ -106,8 +106,57 @@ const getAllIssues = async (queryParams: GetIssuesQuery) => {
   return issuesWithReporter;
 };
 
+const getSingleIssue = async (issueId: number): Promise<IssueWithReporter | null> => {
+  
+  const issueResult = await pool.query(`
+    SELECT 
+      id, 
+      title, 
+      description, 
+      type, 
+      status, 
+      reporter_id, 
+      created_at, 
+      updated_at
+    FROM issues
+    WHERE id = $1
+  `, [issueId]);
+  
+  const issue = issueResult.rows[0];
+  
+  if (!issue) {
+    return null;
+  }
+  
+  const reporterResult = await pool.query(`
+    SELECT id, name, role 
+    FROM users 
+    WHERE id = $1
+  `, [issue.reporter_id]);
+  
+  const reporter = reporterResult.rows[0];
+  
+  const issueWithReporter: IssueWithReporter = {
+    id: issue.id,
+    title: issue.title,
+    description: issue.description,
+    type: issue.type,
+    status: issue.status,    
+    reporter: {
+      id: reporter.id,
+      name: reporter.name,
+      role: reporter.role
+    },
+    created_at: issue.created_at,
+    updated_at: issue.updated_at,
+  };
+  
+  return issueWithReporter;
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssues,
-};
+  getSingleIssue
+}
 

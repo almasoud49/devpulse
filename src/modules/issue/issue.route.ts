@@ -6,7 +6,7 @@ import auth from "../../middleware/auth";
 const router = Router();
 
 router.post("/", auth("contributor"), issueController.createIssue);
-
 router.get("/", issueController.getAllIssues);
+router.get("/:id", issueController.getSingleIssue);
 
 export const issueRoutes = router;

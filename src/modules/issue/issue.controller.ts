@@ -119,7 +119,43 @@ const getAllIssues = async (req: Request, res: Response) => {
   }
 };
 
+const getSingleIssue = async (req: Request, res: Response) => {
+  try {
+    const issueId = parseInt(req.params.id);
+    
+    if (isNaN(issueId)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid issue ID. Must be a valid number.",
+      });
+      return;
+    }
+    
+   const issue = await issueService.getSingleIssue(issueId);
+    
+    if (!issue) {
+      res.status(404).json({
+        success: false,
+        message: `Issue with ID ${issueId} not found`,
+      });
+      return;
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: issue,
+    });
+  } catch (error: any) {
+    console.error("Get single issue error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch issue",
+    });
+  }
+};
+
 export const issueController = {
   createIssue,
   getAllIssues,
+  getSingleIssue,
 };
