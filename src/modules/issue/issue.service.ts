@@ -1,5 +1,5 @@
 import { pool } from "../../db/index";
-import type { CreateIssueRequest, GetIssuesQuery, IssueWithReporter } from "../../types/index";
+import type { CreateIssueRequest, GetIssuesQuery, IssueWithReporter, UpdateIssueRequest } from "../../types/index";
 
 const createIssueIntoDB = async (
   reporterId: number,
@@ -154,9 +154,51 @@ const getSingleIssue = async (issueId: number): Promise<IssueWithReporter | null
   return issueWithReporter;
 };
 
+const updateIssueInDB = async (issueId: number, updates: UpdateIssueRequest) => {
+  
+  const existingIssue = await pool.query(`
+    SELECT id, title, description, type, status, reporter_id
+    FROM issues
+    WHERE id = $1
+  `, [issueId]);
+  
+  const issue = existingIssue.rows[0];
+  
+  if (!issue) {
+    return null; 
+  }
+  
+  const result = await pool.query(
+    `UPDATE issues 
+     SET title = COALESCE($1, title),
+         description = COALESCE($2, description),
+         type = COALESCE($3, type),
+         status = COALESCE($4, status),
+         updated_at = NOW()
+     WHERE id = $5
+     RETURNING 
+       id, 
+       title, 
+       description, 
+       type, 
+       status, 
+       reporter_id, 
+       created_at, 
+       updated_at`,
+    [updates.title, updates.description, updates.type, updates.status, issueId]
+  );
+  
+  return {
+    updatedIssue: result.rows[0],
+    existingIssue: issue 
+  };
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssues,
-  getSingleIssue
-}
+  getSingleIssue,
+  updateIssueInDB,
+};
+
 

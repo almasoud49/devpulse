@@ -154,8 +154,138 @@ const getSingleIssue = async (req: Request, res: Response) => {
   }
 };
 
+const updateIssue = async (req: Request, res: Response) => {
+  try {
+    const issueId = parseInt(req.params.id);
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+    const { title, description, type, status } = req.body;
+    
+    if (isNaN(issueId)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid issue ID",
+      });
+      return;
+    }
+    
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+      return;
+    }
+    
+   const updates: any = {};
+    
+    if (title !== undefined) {
+      if (title.length === 0 || title.length > 150) {
+        res.status(400).json({
+          success: false,
+          message: "Title must be between 1 and 150 characters",
+        });
+        return;
+      }
+      updates.title = title;
+    }
+    
+    if (description !== undefined) {
+      if (description.length < 20) {
+        res.status(400).json({
+          success: false,
+          message: "Description must be at least 20 characters",
+        });
+        return;
+      }
+      updates.description = description;
+    }
+    
+    if (type !== undefined) {
+      if (!issueTypes.includes(type as any)) {
+        res.status(400).json({
+          success: false,
+          message: `Invalid type. Must be: ${issueTypes.join(", ")}`,
+        });
+        return;
+      }
+      updates.type = type;
+    }
+    
+    if (status !== undefined) {
+      if (!issueStatuses.includes(status as any)) {
+        res.status(400).json({
+          success: false,
+          message: `Invalid status. Must be: ${issueStatuses.join(", ")}`,
+        });
+        return;
+      }
+      updates.status = status;
+    }
+    
+    if (Object.keys(updates).length === 0) {
+      res.status(400).json({
+        success: false,
+        message: "No fields to update",
+      });
+      return;
+    }
+    
+   const result = await issueService.updateIssueInDB(issueId, updates);
+    
+  if (!result) {
+      res.status(404).json({
+        success: false,
+        message: `Issue with ID ${issueId} not found`,
+      });
+      return;
+    }
+    
+    const isMaintainer = userRole === 'maintainer';
+    const isOwner = result.existingIssue.reporter_id === userId;
+    
+    if (!isMaintainer && !isOwner) {
+      res.status(403).json({
+        success: false,
+        message: "You don't have permission to update this issue",
+      });
+      return;
+    }
+   
+    if (!isMaintainer && isOwner && result.existingIssue.status !== 'open') {
+      res.status(403).json({
+        success: false,
+        message: "You can only update issues with 'open' status",
+      });
+      return;
+    }
+    
+    if (status !== undefined && !isMaintainer) {
+      res.status(403).json({
+        success: false,
+        message: "Only maintainers can update status",
+      });
+      return;
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: "Issue updated successfully",
+      data: result.updatedIssue,
+    });
+    
+  } catch (error: any) {
+    console.error("Update issue error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update issue",
+    });
+  }
+};
+
 export const issueController = {
   createIssue,
   getAllIssues,
   getSingleIssue,
+  updateIssue,
 };

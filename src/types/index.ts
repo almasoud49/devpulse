@@ -52,3 +52,10 @@ export interface ReporterInfo {
 export interface IssueWithReporter extends Omit<Issue, 'reporter_id'> {
   reporter: ReporterInfo;
 }
+
+export interface UpdateIssueRequest {
+  title?: string;
+  description?: string;
+  type?: IssueType;
+  status?: IssueStatus;
+}
