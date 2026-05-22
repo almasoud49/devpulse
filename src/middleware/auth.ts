@@ -1,13 +1,14 @@
-// src/middlewares/auth.ts
+import { USER_ROLE, type UserRole } from './../types/index';
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import config from "../config/index";
 import { pool } from "../db/index";
 import type { JwtPayload } from "jsonwebtoken";
-import type { Role } from "../types";
 
 
-const auth = (...roles: Role[]) => {
+
+
+const auth = (...roles: UserRole[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       // 1. Check if the token exists
@@ -60,7 +61,6 @@ const auth = (...roles: Role[]) => {
         return;
       }
 
-      // Attach user to request
       req.user = decoded;
       next();
     } catch (error: any) {

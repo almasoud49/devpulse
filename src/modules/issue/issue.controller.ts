@@ -231,7 +231,7 @@ const updateIssue = async (req: Request, res: Response) => {
       return;
     }
     
-   const result = await issueService.updateIssueInDB(issueId, updates);
+   const result = await issueService.updateIssue(issueId, updates);
     
   if (!result) {
       res.status(404).json({
@@ -283,9 +283,57 @@ const updateIssue = async (req: Request, res: Response) => {
   }
 };
 
+const deleteIssue = async (req: Request, res: Response) => {
+  try {
+    const issueId = parseInt(req.params.id);
+    const userRole = req.user?.role;
+    
+    if (isNaN(issueId)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid issue ID. Must be a valid number.",
+      });
+      return;
+    }
+    
+    if (userRole !== 'maintainer') {
+      res.status(403).json({
+        success: false,
+        message: "Forbidden: Only maintainers can delete issues",
+      });
+      return;
+    }
+    
+   const result = await issueService.deleteIssue(issueId);
+    
+    if (!result.success) {
+      res.status(404).json({
+        success: false,
+        message: result.message,
+      });
+      return;
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: "Issue deleted successfully",
+    });
+    
+  } catch (error: any) {
+    console.error("Delete issue error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete issue",
+    });
+  }
+};
+
+
+
 export const issueController = {
   createIssue,
   getAllIssues,
   getSingleIssue,
   updateIssue,
+  deleteIssue,
 };

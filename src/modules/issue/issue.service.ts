@@ -93,14 +93,14 @@ const getAllIssues = async (queryParams: GetIssuesQuery) => {
     title: issue.title,
     description: issue.description,
     type: issue.type,
-    status: issue.status,
-    created_at: issue.created_at,
-    updated_at: issue.updated_at,
+    status: issue.status,    
     reporter: reporterMap.get(issue.reporter_id) || {
       id: issue.reporter_id,
       name: 'Unknown User',
       role: 'contributor'
-    }
+    },
+    created_at: issue.created_at,
+    updated_at: issue.updated_at,
   }));
   
   return issuesWithReporter;
@@ -154,7 +154,7 @@ const getSingleIssue = async (issueId: number): Promise<IssueWithReporter | null
   return issueWithReporter;
 };
 
-const updateIssueInDB = async (issueId: number, updates: UpdateIssueRequest) => {
+const updateIssue = async (issueId: number, updates: UpdateIssueRequest) => {
   
   const existingIssue = await pool.query(`
     SELECT id, title, description, type, status, reporter_id
@@ -194,11 +194,39 @@ const updateIssueInDB = async (issueId: number, updates: UpdateIssueRequest) => 
   };
 };
 
+const deleteIssue = async (issueId: number) => {
+  const existingIssue = await pool.query(`
+    SELECT id, title, status, reporter_id
+    FROM issues
+    WHERE id = $1
+  `, [issueId]);
+  
+  const issue = existingIssue.rows[0];
+  
+  if (!issue) {
+    return { success: false, message: "Issue not found" };
+  }
+  
+  await pool.query(`
+    DELETE FROM issues
+    WHERE id = $1
+  `, [issueId]);
+  
+  return { 
+    success: true, 
+    message: "Issue deleted successfully",
+    deletedIssue: issue 
+  };
+};
+
 export const issueService = {
   createIssueIntoDB,
   getAllIssues,
   getSingleIssue,
-  updateIssueInDB,
+  updateIssue,
+  deleteIssue,
 };
+
+
 
 

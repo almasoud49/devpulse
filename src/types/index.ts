@@ -1,18 +1,22 @@
-export const role = ["contributor", "maintainer"] as const;
-export type Role = typeof role[number];
+export const USER_ROLE = {
+  CONTRIBUTOR: 'contributor',
+  MAINTAINER: 'maintainer',
+} as const;
+
+export type UserRole = typeof USER_ROLE[keyof typeof USER_ROLE];
 
 export interface User {
   id: number;                
   name: string;              
   email: string;           
   password: string;          
-  role: Role;            
+  role: UserRole;            
   created_at: Date;          
   updated_at: Date;          
 }
 
 export type RUser = Omit<User, "id" | "created_at" | "updated_at" | "password"> & {
-  role?: Role;
+  role?: UserRole;
 };
 
 
@@ -47,7 +51,7 @@ export interface GetIssuesQuery {
 export interface ReporterInfo {
   id: number;
   name: string;
-  role: Role;
+  role: UserRole;
 }
 export interface IssueWithReporter extends Omit<Issue, 'reporter_id'> {
   reporter: ReporterInfo;
