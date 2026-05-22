@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import { pool } from "../../db";
+import jwt, { type Secret, type SignOptions } from "jsonwebtoken"
+import config from "../../config";
 
 const lonignUserIntoDB = async(payload: {
         email: string, 
@@ -21,6 +23,19 @@ const lonignUserIntoDB = async(payload: {
     if(!matchPassword){
         throw new Error("Not Matched! Invalid Credentials!")
     }
+
+    const jwtpayload = {
+        id:user.id,
+        name: user.name,
+        role: user.role,
+        email: user.email
+    }
+
+    const accessToken = jwt.sign(jwtpayload, config.access_token_secret as Secret, {
+        expiresIn: "1d"
+    })
+
+    return accessToken;
 
 }
 
