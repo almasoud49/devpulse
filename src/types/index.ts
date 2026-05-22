@@ -1,4 +1,3 @@
-
 export const role = ["contributor", "maintainer"] as const;
 export type Role = typeof role[number];
 
@@ -16,12 +15,12 @@ export type RUser = Omit<User, "id" | "created_at" | "updated_at" | "password"> 
   role?: Role;
 };
 
-export const issueTypes = ["bug", "feature_request"] as const;
+
+export const issueTypes = ["bug", "feature"] as const;
 export type IssueType = typeof issueTypes[number];
 
-export const issueStatuses = ["open", "in_progress", "resolved"] as const;
+export const issueStatuses = ["open", "in_progress", "closed"] as const;
 export type IssueStatus = typeof issueStatuses[number];
-
 
 export interface Issue {
   id: number;                
@@ -34,7 +33,8 @@ export interface Issue {
   updated_at: Date;          
 }
 
-
-export type CreateIssue = Omit<Issue, "id" | "created_at" | "updated_at"> & {
-  status?: IssueStatus; 
-};
+export interface CreateIssueRequest {
+  title: string;
+  description: string;
+  type: IssueType;
+}
