@@ -1,17 +1,17 @@
 import type { Request, Response } from "express";
 import { userService } from "./user.service";
 
+
 const signupUser = async(req: Request, res:Response)=>{
-    const {name, email, password,role} = req.body;
+   
     try {
 
-        const result = await userService.signupUserIntoDB(req.body)
-        console.log("User Registration",result)
+        const result = await userService.signupUserIntoDB(req.body);
         
         res.status(201).json({
         success: true,
         message: "User registered successfully",
-        data: result
+        data: result.rows[0]
     });
         
     } catch (error:any) {
