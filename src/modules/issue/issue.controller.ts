@@ -1,7 +1,7 @@
 
 import type { Request, Response } from "express";
 import { issueService } from "./issue.service";
-import { issueTypes } from "../../types/index";
+import { issueStatuses, issueTypes } from "../../types/index";
 
 const createIssue = async (req: Request, res: Response) => {
   try {
@@ -66,6 +66,60 @@ const createIssue = async (req: Request, res: Response) => {
   }
 };
 
+const getAllIssues = async (req: Request, res: Response) => {
+  try {
+    const { sort, type, status } = req.query;
+    
+    const validSortValues = ['newest', 'oldest'];
+    const sortValue = sort as string;
+    if (sort && !validSortValues.includes(sortValue)) {
+      res.status(400).json({
+        success: false,
+        message: `Invalid sort parameter. Must be one of: ${validSortValues.join(", ")}`,
+      });
+      return;
+    }
+    
+    const typeValue = type as string;
+    if (type && !issueTypes.includes(typeValue as any)) {
+      res.status(400).json({
+        success: false,
+        message: `Invalid type parameter. Must be one of: ${issueTypes.join(", ")}`,
+      });
+      return;
+    }
+ 
+    const statusValue = status as string;
+    if (status && !issueStatuses.includes(statusValue as any)) {
+      res.status(400).json({
+        success: false,
+        message: `Invalid status parameter. Must be one of: ${issueStatuses.join(", ")}`,
+      });
+      return;
+    }
+    
+    const queryParams = {
+      sort: sortValue || 'newest',
+      type: typeValue as any,
+      status: statusValue as any,
+    };
+    
+    const issues = await issueService.getAllIssues(queryParams);
+      
+    res.status(200).json({
+      success: true,
+      data: issues,
+    });
+  } catch (error: any) {
+    console.error("Get all issues error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch issues",
+    });
+  }
+};
+
 export const issueController = {
   createIssue,
+  getAllIssues,
 };

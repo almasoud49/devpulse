@@ -16,7 +16,7 @@ export type RUser = Omit<User, "id" | "created_at" | "updated_at" | "password"> 
 };
 
 
-export const issueTypes = ["bug", "feature"] as const;
+export const issueTypes = ["bug", "feature_request"] as const;
 export type IssueType = typeof issueTypes[number];
 
 export const issueStatuses = ["open", "in_progress", "closed"] as const;
@@ -37,4 +37,18 @@ export interface CreateIssueRequest {
   title: string;
   description: string;
   type: IssueType;
+}
+export interface GetIssuesQuery {
+  sort?: 'newest' | 'oldest';
+  type?: IssueType;
+  status?: IssueStatus;
+}
+
+export interface ReporterInfo {
+  id: number;
+  name: string;
+  role: Role;
+}
+export interface IssueWithReporter extends Omit<Issue, 'reporter_id'> {
+  reporter: ReporterInfo;
 }

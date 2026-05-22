@@ -1,5 +1,5 @@
 import { pool } from "../../db/index";
-import type { CreateIssueRequest } from "../../types/index";
+import type { CreateIssueRequest, GetIssuesQuery, IssueWithReporter } from "../../types/index";
 
 const createIssueIntoDB = async (
   reporterId: number,
@@ -25,6 +25,89 @@ const createIssueIntoDB = async (
   return result.rows[0];
 };
 
+const getAllIssues = async (queryParams: GetIssuesQuery) => {
+  const { sort = 'newest', type, status } = queryParams;
+  
+  let sqlQuery = `
+    SELECT 
+      id, 
+      title, 
+      description, 
+      type, 
+      status, 
+      reporter_id, 
+      created_at, 
+      updated_at
+    FROM issues
+    WHERE 1=1
+  `;
+  
+  const queryValues: any[] = [];
+  let paramCounter = 1;
+  
+  if (type) {
+    sqlQuery += ` AND type = $${paramCounter}`;
+    queryValues.push(type);
+    paramCounter++;
+  }
+  
+  
+  if (status) {
+    sqlQuery += ` AND status = $${paramCounter}`;
+    queryValues.push(status);
+    paramCounter++;
+  }
+  
+  if (sort === 'newest') {
+    sqlQuery += ` ORDER BY created_at DESC`;
+  } else if (sort === 'oldest') {
+    sqlQuery += ` ORDER BY created_at ASC`;
+  }
+  
+  const result = await pool.query(sqlQuery, queryValues);
+  const issues = result.rows;
+  
+  if (issues.length === 0) {
+    return [];
+  }
+  
+  const reporterIds = [...new Set(issues.map(issue => issue.reporter_id))];
+  
+  const reportersResult = await pool.query(`
+    SELECT id, name, role 
+    FROM users 
+    WHERE id = ANY($1::int[])
+  `, [reporterIds]);
+  
+  const reporterMap = new Map();
+  reportersResult.rows.forEach((reporter: any) => {
+    reporterMap.set(reporter.id, {
+      id: reporter.id,
+      name: reporter.name,
+      role: reporter.role
+    });
+  });
+  
+  const issuesWithReporter: IssueWithReporter[] = issues.map((issue: any) => ({
+    id: issue.id,
+    title: issue.title,
+    description: issue.description,
+    type: issue.type,
+    status: issue.status,
+    created_at: issue.created_at,
+    updated_at: issue.updated_at,
+    reporter: reporterMap.get(issue.reporter_id) || {
+      id: issue.reporter_id,
+      name: 'Unknown User',
+      role: 'contributor'
+    }
+  }));
+  
+  return issuesWithReporter;
+};
+
 export const issueService = {
   createIssueIntoDB,
+  getAllIssues,
 };
+
