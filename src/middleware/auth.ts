@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import config from "../config/index";
 import { pool } from "../db/index";
 import type { JwtPayload } from "jsonwebtoken";
-import type { ROLES } from "../types";
+import { USER_ROLE, type ROLES } from "../types";
 import sendResponse from "../utility/sendResponse";
 
 const auth = (...roles: ROLES[]) => {
@@ -44,7 +44,7 @@ const auth = (...roles: ROLES[]) => {
         sendResponse(res, {
           statusCode: 403,
            success: false,
-           message: "Forbidden!!, This role is not found!"
+           message: `Sorry,Only ${USER_ROLE.maintainer} is allowed to perform this work!`
         });
         return;
       }

@@ -6,6 +6,12 @@ A role-based issue tracking system built with Node.js, Express, TypeScript, and 
 
 `https://your-api-domain.com` (Production URL to be added)
 
+Question-01:
+`https://drive.google.com/file/d/1a_S8cBah-h871niQk9c-pzRxyapp4oMF/view?usp=drive_link`
+
+Question-02:
+`https://drive.google.com/file/d/1VClZOjNzSUgeUZ9ehbAG5yi_YWGXHvWf/view?usp=drive_link`
+
 ## Features
 
 ### Authentication & Authorization
@@ -52,8 +58,8 @@ A role-based issue tracking system built with Node.js, Express, TypeScript, and 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/issue-tracker-api.git
-cd issue-tracker-api
+git clone https://github.com/almasoud49/devpulse
+cd devpulse
 ```
 
 ### Step 2: Install Dependencies
@@ -69,14 +75,12 @@ PORT=8000
 NODE_ENV=development
 
 DB_HOST=localhost
-DB_PORT=5432
 DB_NAME=devpulse
 DB_USER=postgres
 DB_PASSWORD=your_password
-
 JWT_SECRET=your_super_secret_key
-JWT_EXPIRES_IN=7d
-BCRYPT_SALT_ROUNDS=10
+
+
 ```
 
 ### Step 4: Start Application
