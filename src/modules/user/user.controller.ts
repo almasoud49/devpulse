@@ -1,25 +1,26 @@
 import type { Request, Response } from "express";
 import { userService } from "./user.service";
-import { USER_ROLE } from "../../types";
+import sendResponse from "../../utility/sendResponse";
 
 
 const signupUser = async(req: Request, res:Response)=>{
    
-    try {
-        
+    try {        
         const result = await userService.signupUserIntoDB(req.body);
-        
-        res.status(201).json({
-        success: true,
-        message: "User registered successfully",
-        data: result.rows[0]
-    });
+        sendResponse(res,{
+            statusCode:201,
+            success:true,
+            message:"User registered successfully",
+            data: result.rows[0]
+        });    
         
     } catch (error:any) {
-        res.status(500).json({
-            message: error.message,
+        sendResponse(res,{
+            statusCode:500,
+            success:false,
+            message:error.message,
             error:error
-        })
+        });
         
     }
 }
