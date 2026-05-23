@@ -1,11 +1,12 @@
 import type { Request, Response } from "express";
 import { userService } from "./user.service";
+import { USER_ROLE } from "../../types";
 
 
 const signupUser = async(req: Request, res:Response)=>{
    
     try {
-
+        
         const result = await userService.signupUserIntoDB(req.body);
         
         res.status(201).json({

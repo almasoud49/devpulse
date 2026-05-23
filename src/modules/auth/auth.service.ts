@@ -2,10 +2,9 @@ import bcrypt from "bcryptjs";
 import { pool } from "../../db";
 import jwt, { type Secret } from "jsonwebtoken"
 import config from "../../config";
+import type { UserCredentials } from "../../types";
 
-const lonignUserIntoDB = async(payload: {
-        email: string, 
-        password: string})=>{
+const lonignUserIntoDB = async(payload: UserCredentials)=>{
     const {email ,password} = payload;
 
     const result = await pool.query(`
@@ -14,7 +13,7 @@ const lonignUserIntoDB = async(payload: {
     const userData = result.rows[0];
     // console.log(user)
 
-    if(userData.rows?.length === 0){
+    if(userData?.rows?.length === 0){
         throw new Error("Invalid Credentials! User not Found.")
     }
 

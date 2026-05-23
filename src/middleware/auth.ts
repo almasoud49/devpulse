@@ -1,17 +1,13 @@
-import { USER_ROLE, type UserRole } from './../types/index';
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import config from "../config/index";
 import { pool } from "../db/index";
 import type { JwtPayload } from "jsonwebtoken";
+import type { ROLES } from "../types";
 
-
-
-
-const auth = (...roles: UserRole[]) => {
+const auth = (...roles: ROLES[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // 1. Check if the token exists
       const token = req.headers.authorization;
       
       if (!token) {
@@ -22,13 +18,11 @@ const auth = (...roles: UserRole[]) => {
         return;
       }
 
-      // 2. Verify the token
       const decoded = jwt.verify(
         token as string,
         config.access_token_secret as string
       ) as JwtPayload;
 
-      // 3. Find the user in database
       const userData = await pool.query(`
         SELECT * FROM users WHERE email=$1
       `, [decoded.email]);
@@ -43,16 +37,6 @@ const auth = (...roles: UserRole[]) => {
         return;
       }
 
-      // 4. Check if user is active
-      if (user?.open=== false) {
-        res.status(403).json({
-          success: false,
-          message: "Forbidden: Account is deactivated"
-        });
-        return;
-      }
-
-      // 5. Role based validation
       if (roles.length && !roles.includes(user.role)) {
         res.status(403).json({
           success: false,
@@ -62,6 +46,7 @@ const auth = (...roles: UserRole[]) => {
       }
 
       req.user = decoded;
+
       next();
     } catch (error: any) {
       next(error);
